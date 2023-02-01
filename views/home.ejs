@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Home</title>
+	<script src="https://cdn.socket.io/4.5.4/socket.io.min.js" integrity="sha384-/KNQL8Nu5gCHLqwqfQjA689Hhoqgi2S84SNUxC3roTe4EhJ9AfLkp8QiQcU8AMzI" crossorigin="anonymous"></script></head>
+<body>
+
+	<h1>Seu id é:</h1>
+	<h2>Novas mensagens aparecerão aqui</h2>
+	<h3>Alertas aparecerão aqui</h3>
+	<input type="text" name="mensagem" placeholder="Mensagem">
+	<hr>
+	<input type="text" name="destinatario" placeholder="Destinatário">
+	<button onclick='enviaMensagem()'>Enviar mensagem</button>
+
+	<hr>
+	<input type="text" name="sala" placeholder="Sala">
+	<button onclick='entrarNaSala()'>Entrar na sala</button>
+
+<script type="text/javascript">
+	const mensagem = document.querySelector('input[name="mensagem"]');
+	const destinatario = document.querySelector('input[name="destinatario"]');
+	const sala = document.querySelector('input[name="sala"]');
+	const idAtual = document.querySelector('h1');
+	const mensagensRecebidas = document.querySelector('h2');
+	const alertas = document.querySelector('h3');
+
+	const enviaMensagem = () => {
+		socket.emit('message', mensagem.value, destinatario.value, sala.value);
+	};
+
+	const entrarNaSala = () => {
+		if (sala.value !== '')
+			socket.emit('join-room', sala.value, alerta => {
+				alertas.textContent = alerta;
+			});
+	}
+
+	// aqui emitimos os eventos que serão escutados no servidor
+	const socket = io('http://localhost:3000');
+	socket.on('connect', () => {
+		idAtual.textContent = `Seu id é: ${socket.id}`;
+	});
+
+	socket.on('message', data => {
+		mensagensRecebidas.textContent = data;
+	});
+</script>
+</body>
+</html>
