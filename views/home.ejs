@@ -4,17 +4,76 @@
 	<meta charset="utf-8">
 	<title>Home</title>
 	<script src="https://cdn.socket.io/4.5.4/socket.io.min.js" integrity="sha384-/KNQL8Nu5gCHLqwqfQjA689Hhoqgi2S84SNUxC3roTe4EhJ9AfLkp8QiQcU8AMzI" crossorigin="anonymous"></script></head>
+	<style type="text/css">
+		@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+		*, *::before, *::after {
+			box-sizing: border-box;
+			font-family: 'Poppins', sans-serif;
+		}
+		#mensagensRecebidas {
+			padding: 1rem;
+			border: 1px solid #eee;
+			border-radius: 1rem;
+			margin-bottom: 2rem;
+		}
+
+		.propria, .outrem {
+			padding: 1rem;
+			border-radius: 1rem;
+		}
+
+		.propria {
+			background: #606060;
+			color: #fff;
+		}
+
+		.outrem {
+			background: #eee;
+			color: #606060;
+		}
+
+		button {
+			padding: 1rem;
+			border: 0;
+			border-radius: 1rem;
+		}
+
+		button:hover {
+			cursor: pointer;
+			opacity: .75;
+		}
+
+		input {
+			padding: 1rem;
+			border-radius: 1rem;
+			border: 1px solid #eee;
+		}
+
+		input[name="destinatario"] {
+			background: #eee;
+			display: block;
+			margin: 1rem 0;
+			width: 15%;
+		}
+
+		input[name="mensagem"] {
+			padding: 2rem;
+			width: 50%;
+		}
+
+		input:focus {
+			outline: 1px solid #606060;
+		}
+	</style>
 <body>
-
 	<h1>Seu id é:</h1>
-	<h2>Novas mensagens aparecerão aqui</h2>
-	<h3>Alertas aparecerão aqui</h3>
+	<div id="mensagensRecebidas"></div>
+	<input type="text" name="destinatario" placeholder="Destinatário (vazio para broadcast)">
 	<input type="text" name="mensagem" placeholder="Mensagem">
-	<hr>
-	<input type="text" name="destinatario" placeholder="Destinatário">
 	<button onclick='enviaMensagem()'>Enviar mensagem</button>
-
-	<hr>
+	<h3>Especificações adicionais:</h3>	
+	<label>Entrar em uma sala: </label>
 	<input type="text" name="sala" placeholder="Sala">
 	<button onclick='entrarNaSala()'>Entrar na sala</button>
 
@@ -23,17 +82,28 @@
 	const destinatario = document.querySelector('input[name="destinatario"]');
 	const sala = document.querySelector('input[name="sala"]');
 	const idAtual = document.querySelector('h1');
-	const mensagensRecebidas = document.querySelector('h2');
-	const alertas = document.querySelector('h3');
+	const mensagensRecebidas = document.querySelector('#mensagensRecebidas');
+
+	const insereMensagem = (data, propria = false) => {
+		let msg = document.createElement('p');
+		msg.textContent = data;
+		if (propria) {
+			msg.classList.add('propria');
+		} else {
+			msg.classList.add('outrem');
+		}
+		mensagensRecebidas.appendChild(msg);
+	} 
 
 	const enviaMensagem = () => {
-		socket.emit('message', mensagem.value, destinatario.value, sala.value);
+		insereMensagem(`${socket.id}: ${mensagem.value}`, propria = true);
+		socket.emit('message', `${socket.id}: ${mensagem.value}`, destinatario.value, sala.value);
 	};
 
 	const entrarNaSala = () => {
 		if (sala.value !== '')
 			socket.emit('join-room', sala.value, alerta => {
-				alertas.textContent = alerta;
+				insereMensagem(alerta, propria = true);
 			});
 	}
 
@@ -44,7 +114,7 @@
 	});
 
 	socket.on('message', data => {
-		mensagensRecebidas.textContent = data;
+		insereMensagem(data, propria = false);
 	});
 </script>
 </body>

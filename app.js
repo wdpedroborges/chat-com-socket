@@ -12,7 +12,7 @@ const io = require('socket.io')(http, {
 });
 app.set('view engine', 'ejs');
 
-app.get('/home', (req, res) => {
+app.get('/', (req, res) => {
 	res.render('home');
 });
 
